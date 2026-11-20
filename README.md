@@ -18,13 +18,13 @@ The engine speaks the make.fun env protocol: it asks the env for a game, plays i
 
 ## Design notes
 
-Squares are numbered 0=a1 to 63=h8. Sliding attacks come from precomputed ray tables, and the position carries an incremental Zobrist key and score through make/unmake, so the search never rescans the board. Move ordering is MVV-LVA for captures, then two killer moves per ply, then a history table. Quiescence searches captures and queen promotions, all evasions when in check, with delta pruning. The transposition table stores mate scores ply-adjusted so a mate found deep still reads correctly near the root.
+Squares are numbered 0=a1 to 63=h8. Sliding attacks come from precomputed ray tables, and the position carries an incremental Zobrist key and score through make/unmake. Quiescence searches captures and queen promotions (all evasions when in check) with delta pruning; the transposition table stores mate scores ply-adjusted.
 
-The node budget is fixed at 70,000 nodes per move. A clock-based cutoff would make replays diverge, and the trial budget (1800s for the scored games) leaves room: the worst move measured locally took about 2–3 seconds against a 10-second limit. Move generation is verified against standard perft counts (start position to depth 4 = 197281, Kiwipete, en-passant pin, and castling/promotion positions all exact).
+The node budget is fixed at 70,000 per move — a clock cutoff would make replays diverge. Worst move measured locally: ~2–3s against a 10s limit. Move generation is verified against standard perft counts (startpos depth 4 = 197281, Kiwipete, en-passant pin, castling/promotion — all exact).
 
 ## Practice results
 
-Against the kit's house gauntlet (6 games per trial, kit env + sealed scorer), this entry scored 1545 / 1545 / 1451 across three trials (mean 1514). The house baseline `agent/sunfish-4k` scored 1364 / 1451 / 1279 (mean 1365) on the same trials, so the entry leads the baseline on all three. Known weaknesses: endgame conversion is slow (evaluation is piece-square tables only, no passed-pawn or mobility terms), and it loses most games to the gauntlet's 500k-node rung.
+Against the kit's house gauntlet (6 games per trial), this entry scored 1545 / 1545 / 1451 (mean 1514); the `agent/sunfish-4k` baseline scored 1364 / 1451 / 1279 (mean 1365) on the same trials. Known weakness: slow endgame conversion (PST-only evaluation) and losses to the gauntlet's 500k-node rung.
 
 ---
 
